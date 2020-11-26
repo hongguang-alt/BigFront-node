@@ -77,6 +77,52 @@ class Public {
             data
         }
     }
+    getList = async ctx => {
+        const {
+            type
+        } = ctx.request.query
+        if (type === '0') {
+            ctx.body = {
+                status: 200,
+                data: require('../mock/getList'),
+                msg: '获取列表成功'
+            }
+        } else {
+            ctx.body = {
+                status: 200,
+                data: require('../mock/getTop'),
+                msg: '获取列表成功'
+            }
+        }
+    }
+    //友情链接
+    getLinks = async ctx => {
+        const {
+            type
+        } = ctx.request.query
+        if (type === 'links') {
+            ctx.body = {
+                status: 200,
+                msg: '获取友情链接成功',
+                data: require('../mock/getLinks').links
+            }
+        } else {
+            ctx.body = {
+                status: 200,
+                msg: '获取温馨提示成功',
+                data: require('../mock/getLinks').tips
+            }
+        }
+    }
+
+    toWeek = async ctx => {
+        ctx.body = {
+            msg: '获取成功',
+            status: 200,
+            data: require('../mock/toweek')
+        }
+    }
 }
+
 
 module.exports = new Public()

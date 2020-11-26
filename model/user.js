@@ -1,10 +1,17 @@
-require('../config/MongoConnection')
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
-    "username": String,
-    "nickname": String,
-    "password": String
+    username: String,
+    nickname: String,
+    password: String,
+    count: Number,
+    favs: Number
+})
+
+userSchema.static('findById', function (id) {
+    return this.findOne({
+        _id: id
+    })
 })
 
 const User = mongoose.model('user', userSchema, 'user')

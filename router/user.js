@@ -10,7 +10,9 @@ const user = new Router({
 //用户登陆接口
 user.post('/login', User.login)
 //用户注册接口
-user.post('/register',User.register)
+user.post('/register', User.register)
 
+//用户点击进行签到的接口
+user.get('/sign', User.sign)
 
 module.exports = user

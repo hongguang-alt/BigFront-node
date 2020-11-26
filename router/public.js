@@ -18,5 +18,13 @@ public.post('/checkUsername', Public.checkUsername)
 //昵称是否相同
 public.post('/checkNickname', Public.checkNickname)
 
+//获取列表
+public.get('/list', Public.getList)
+
+//友情链接
+public.get('/links',Public.getLinks)
+
+//每周热议
+public.get('/toWeek',Public.toWeek)
 
 module.exports = public

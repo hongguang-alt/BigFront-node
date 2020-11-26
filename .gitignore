@@ -160,3 +160,4 @@ dist
 
 node_modules/
 dist/
+mock/
