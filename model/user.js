@@ -5,7 +5,9 @@ const userSchema = new mongoose.Schema({
     nickname: String,
     password: String,
     count: Number,
-    favs: Number
+    favs: Number,
+    location: String,
+    regmark: String
 })
 
 userSchema.static('findById', function (id) {

@@ -15,4 +15,13 @@ user.post('/register', User.register)
 //用户点击进行签到的接口
 user.get('/sign', User.sign)
 
+//修改个人信息的接口
+user.post('/basic', User.updateInfo)
+
+//修改邮箱的接口
+user.post('/updateUserName', User.updateUserName)
+
+//重置密码的接口
+user.post('/resetPassword', User.resetPassword)
+
 module.exports = user

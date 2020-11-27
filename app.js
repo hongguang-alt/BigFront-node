@@ -21,7 +21,12 @@ app.use(cors())
 //保证中间件的安全
 app.use(helmet())
 //获取参数
-app.use(KoaBody())
+app.use(KoaBody({
+    multipart: true,
+    formidable: {
+        maxFieldsSize: 5 * 1024 * 1024
+    }
+}))
 //提供静态资源
 app.use(statics(path.join(__dirname, '../public')))
 
@@ -35,7 +40,7 @@ app.use(authError)
 app.use(KoaJwt({
     secret: SECRET
 }).unless({
-    path: [/^\/user\/login/, /^\/user\/register/, /^\/public/]
+    path: [/^\/user\/login/, /^\/user\/register/, /^\/user\/resetPassword/, /^\/public/, ]
 }));
 
 

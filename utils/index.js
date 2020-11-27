@@ -1,3 +1,8 @@
+const {
+    SECRET
+} = require('../config')
+const jwt = require('jsonwebtoken')
+
 //验证错误信息
 const authError = function (ctx, next) {
     return next().catch((err) => {
@@ -17,6 +22,13 @@ const authError = function (ctx, next) {
     });
 };
 
+const getInfoByToken = function (ctx) {
+    let token = ctx.header.authorization.split(' ')[1]
+    let res = jwt.verify(token, SECRET)
+    return res
+}
+
 module.exports = {
-    authError
+    authError,
+    getInfoByToken
 }

@@ -19,21 +19,22 @@ async function main(userInfo) {
         },
     });
 
+    let isEmail = userInfo.type === 'email'
     // send mail with defined transport object
     let info = await transporter.sendMail({
         from: '"认证邮件" <2273049646@qq.com>', // sender address
-        to: "2273049646@qq.com", // list of receivers
-        subject: "红光论坛注册码", // Subject line
-        text: `您在修改密码，您的邀请码为${userInfo.code}`, // plain text body
+        to: userInfo.email, // list of receivers
+        subject: isEmail ? "修改用户名" : "重置密码", // Subject line
+        text: isEmail ? '修改邮箱' : '重置密码', // 
         html: `<div style="width: 800px;height:280px;border:1px solid gray;border-radius: 10px;margin: auto;">
         <div style="height:50px;color:white;font-size:25px;border-radius: 10px;line-height:50px;text-align:left;background-color: black;padding: 10px;">
             红光社区——欢迎来到红光社区
         </div>
         <div style="background-color: white;padding: 15px;">
-            <p>您好，${userInfo.user}同学，重置链接有效时间30分钟，请在${userInfo.expire}之前重置你的密码：</p>
-           <a href="http://www.baidu.com"> 
+            <p>您好，${userInfo.email}同学，重置链接有效时间30分钟，请在${userInfo.expire}之前重置你的 ${isEmail ? '邮箱' :'密码'}：</p>
+           <a href="${userInfo.url}"> 
                <button style="height: 40px;width: 150px;color: white;background-color: #009688;">
-                立即重置密码
+                ${isEmail ? '重置邮箱' :'重置密码'}
                 </button>
             </a>
             <p style="background-color: rgba(0,0,0,.2);">如果该邮件不是你本人操作，请勿进行激活，否则你的邮箱将被他人绑定！</p>

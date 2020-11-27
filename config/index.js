@@ -5,5 +5,6 @@ module.exports = {
     MONGODB_PORT: '12500',
     REDIS_PORT: '12501',
     REDIS_PASSWORD: "123456",
-    SECRET: "hongguang"
+    SECRET: "hongguang",
+    BASE_URL:"http://localhost:8080"
 }

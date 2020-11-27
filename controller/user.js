@@ -1,13 +1,23 @@
 const jwt = require('jsonwebtoken')
 const {
-    getValue
+    getValue,
+    setValue
 } = require('../config/RedisConnection')
 const UserDb = require('../model/user')
 const SignDb = require('../model/sign')
 const {
-    SECRET
+    SECRET,
+    BASE_URL
 } = require('../config/index')
 const moment = require('moment')
+const {
+    getInfoByToken
+} = require('../utils')
+
+const main = require('../config/MailConfig')
+const {
+    v4
+} = require('uuid')
 
 class User {
     constructor() {}
@@ -52,11 +62,14 @@ class User {
             let {
                 lastSign
             } = signInfo
+            //判断签到状态
             if (lastSign && moment(lastSign).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD')) {
                 userInfo.isSign = true
             } else {
                 userInfo.isSign = false
             }
+            //返回用户名
+            userInfo.username = username
             return ctx.body = {
                 msg: '登陆成功',
                 status: 200,
@@ -104,8 +117,7 @@ class User {
         }
     }
     sign = async ctx => {
-        let token = ctx.header.authorization.split(' ')[1]
-        let res = jwt.verify(token, SECRET)
+        let res = getInfoByToken(ctx)
         let signInfo = await SignDb.findByUid(res.id)
         let userInfo = await UserDb.findById(res.id)
         let data = {
@@ -204,6 +216,117 @@ class User {
             status: 200,
             msg: '签到成功',
             data
+        }
+    }
+    updateInfo = async ctx => {
+        let {
+            username,
+            nickname,
+            gender,
+            location,
+            regmark
+        } = ctx.request.body
+        let obj = getInfoByToken(ctx)
+        let userInfo = await UserDb.findById(obj.id)
+        if (username && userInfo.username !== username) {
+            const key = v4()
+            setValue(key, jwt.sign({
+                    id: obj.id
+                },
+                SECRET, {
+                    expiresIn: '30m'
+                }), 60 * 30)
+            let type = 'email'
+            let url = `${BASE_URL}/#/${type}?key=${key}&username=${username}`
+
+
+            let res = await main({
+                type,
+                url,
+                expire: moment().add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
+                email: userInfo.username,
+            })
+
+            return ctx.body = {
+                status: 202,
+                msg: res
+            }
+        } else {
+            let res = await UserDb.updateOne({
+                _id: obj.id
+            }, {
+                nickname,
+                gender,
+                location,
+                regmark
+            })
+            if (res.ok == 1) {
+                return ctx.body = {
+                    status: 200,
+                    msg: '修改成功'
+                }
+            } else {
+                return ctx.body = {
+                    status: 201,
+                    msg: "修改失败"
+                }
+            }
+        }
+    }
+    updateUserName = async ctx => {
+        const {
+            key,
+            username
+        } = ctx.request.body
+        let token = await getValue(key)
+        let obj = jwt.verify(token, SECRET)
+        let res = await UserDb.updateOne({
+            _id: obj.id
+        }, {
+            username
+        })
+        if (res.ok == 1) {
+            return ctx.body = {
+                status: 200,
+                msg: "修改成功"
+            }
+        } else {
+            return ctx.body = {
+                status: 201,
+                msg: '修改失败'
+            }
+        }
+    }
+    resetPassword = async ctx => {
+        const {
+            password,
+            key
+        } = ctx.request.body
+        let token = await getValue(key)
+        if (!token) {
+            ctx.body = {
+                status: 201,
+                msg: '重置失败'
+            }
+        }
+        let obj = jwt.verify(token, SECRET)
+        let res = await UserDb.updateOne({
+            _id: obj.id
+        }, {
+            $set: {
+                password: password
+            }
+        })
+        if (res.ok === 1) {
+            return ctx.body = {
+                msg: "修改密码成功",
+                status: 200
+            }
+        } else {
+            ctx.body = {
+                msg: '修改密码失败',
+                status: 201
+            }
         }
     }
 }

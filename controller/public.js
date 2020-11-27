@@ -1,11 +1,18 @@
 const mySvgCaptcha = require('svg-captcha')
+const jwt = require('jsonwebtoken')
 const moment = require('moment')
 const main = require('../config/MailConfig')
 const UserDb = require('../model/user')
 const {
     setValue
 } = require('../config/RedisConnection')
-
+const {
+    BASE_URL,
+    SECRET
+} = require('../config')
+const {
+    v4
+} = require('uuid')
 class Public {
     constructor() {}
     svgCaptcha = async ctx => {
@@ -31,11 +38,23 @@ class Public {
         const {
             body
         } = ctx.request
+        let type = 'reset'
+        let key = 'reset' + v4()
+        let obj = await UserDb.findOne({
+            username: body.username
+        })
+        setValue(key, jwt.sign({
+                id: obj.id
+            },
+            SECRET, {
+                expiresIn: '30m'
+            }), 60 * 30)
+        let url = `${BASE_URL}/#/${type}?key=${key}`
         let res = await main({
-            code: '1234',
+            type,
             expire: moment().add(30, 'minutes').format('YYYY-MM-DD HH:mm:ss'),
             email: body.username,
-            user: 'hongguang'
+            url,
         })
         ctx.body = {
             status: 200,
