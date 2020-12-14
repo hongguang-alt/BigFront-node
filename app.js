@@ -27,8 +27,9 @@ app.use(KoaBody({
         maxFieldsSize: 5 * 1024 * 1024
     }
 }))
+
 //提供静态资源
-app.use(statics(path.join(__dirname, '../public')))
+app.use(statics(path.join(__dirname, '/public')))
 
 
 //对于权限错误进行验证

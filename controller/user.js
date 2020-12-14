@@ -7,7 +7,9 @@ const UserDb = require('../model/user')
 const SignDb = require('../model/sign')
 const {
     SECRET,
-    BASE_URL
+    BASE_URL,
+    ROOT_PUBLIC,
+    SERVER_URL
 } = require('../config/index')
 const moment = require('moment')
 const {
@@ -18,6 +20,8 @@ const main = require('../config/MailConfig')
 const {
     v4
 } = require('uuid')
+const makeDir = require('make-dir')
+const fs = require('fs')
 
 class User {
     constructor() {}
@@ -328,6 +332,68 @@ class User {
                 status: 201
             }
         }
+    }
+    uploadImg = async ctx => {
+        try {
+            let file = ctx.request.files.file
+            let ext = file.name.split('.').pop()
+            let pathPublic = `${ROOT_PUBLIC}/${moment().format('YYYYMMDD')}/`
+            await makeDir(pathPublic)
+            let reader = fs.createReadStream(file.path)
+            let fileName = v4() + '.' + ext
+            let upStream = fs.createWriteStream(`${pathPublic}/${fileName}`)
+            reader.pipe(upStream)
+            let pic = SERVER_URL + `/${moment().format('YYYYMMDD')}/` + fileName
+            let obj = getInfoByToken(ctx)
+            let res = await UserDb.updateOne({
+                _id: obj.id
+            }, {
+                $set: {
+                    pic: pic
+                }
+            })
+            console.log(res)
+            ctx.body = {
+                status: 200,
+                data: {
+                    pic
+                }
+            }
+        } catch (e) {
+            ctx.body = {
+                status: 201,
+                msg: '上传错误'
+            }
+        }
+    }
+    updatePassword = async ctx => {
+        const {
+            oldpassword,
+            password
+        } = ctx.request.body
+        let obj = getInfoByToken(ctx)
+        let userInfo = await UserDb.findById(obj.id)
+        if (userInfo.password == oldpassword) {
+            let res = await UserDb.updateOne({
+                _id: obj.id
+            }, {
+                $set: {
+                    password
+                }
+            })
+            if (res.ok === 1) {
+                ctx.body = {
+                    status: 200,
+                    msg: "更新密码成功"
+                }
+            }
+        } else {
+            ctx.body = {
+                status: 201,
+                msg: "旧密码错误"
+            }
+        }
+
     }
 }
 

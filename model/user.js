@@ -7,7 +7,8 @@ const userSchema = new mongoose.Schema({
     count: Number,
     favs: Number,
     location: String,
-    regmark: String
+    regmark: String,
+    pic: String
 })
 
 userSchema.static('findById', function (id) {
