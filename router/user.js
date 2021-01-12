@@ -27,7 +27,10 @@ user.post('/resetPassword', User.resetPassword)
 //上传头像接口
 user.post('/uploadImg', User.uploadImg)
 
-
 //修改密码的接口
 user.post('/updatePassword',User.updatePassword)
+
+//上传用户帖子的接口
+user.post('/sendPost',User.sendPost)
+
 module.exports = user

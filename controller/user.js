@@ -5,6 +5,7 @@ const {
 } = require('../config/RedisConnection')
 const UserDb = require('../model/user')
 const SignDb = require('../model/sign')
+const PostDb = require('../model/post')
 const {
     SECRET,
     BASE_URL,
@@ -352,7 +353,6 @@ class User {
                     pic: pic
                 }
             })
-            console.log(res)
             ctx.body = {
                 status: 200,
                 data: {
@@ -394,6 +394,38 @@ class User {
             }
         }
 
+    }
+    sendPost = async ctx => {
+        let {
+            body
+        } = ctx.request
+        const {
+            sid,
+            code
+        } = body
+        //验证验证码
+        let resSid = await getValue(sid)
+        if (!resSid) {
+            return ctx.body = {
+                msg: "图片验证码已经过期",
+                status: 201
+            }
+        } else if (resSid.toLocaleLowerCase() !== code.toLocaleLowerCase()) {
+            return ctx.body = {
+                msg: '验证码错误',
+                status: 201
+            }
+        }
+        //新建文章，使用save方法
+        let post = JSON.parse(JSON.stringify(body))
+        delete post.sid
+        delete post.code
+        let postSave = new PostDb(post)
+        await postSave.save()
+        ctx.body = {
+            status: 200,
+            msg: '上传成功',
+        }
     }
 }
 
