@@ -417,10 +417,15 @@ class User {
             }
         }
         //新建文章，使用save方法
+        //如何验证用户的uid
+        let resInfo = getInfoByToken(ctx)
         let post = JSON.parse(JSON.stringify(body))
         delete post.sid
         delete post.code
-        let postSave = new PostDb(post)
+        let postSave = new PostDb({
+            ...post,
+            uid: resInfo.id
+        })
         await postSave.save()
         ctx.body = {
             status: 200,

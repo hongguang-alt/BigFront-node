@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const moment = require('moment')
 const main = require('../config/MailConfig')
 const UserDb = require('../model/user')
+const PostDb = require('../model/post')
 const {
     setValue
 } = require('../config/RedisConnection')
@@ -98,18 +99,47 @@ class Public {
     }
     getList = async ctx => {
         const {
-            type
+            type,
+            sort,
+            page,
+            limit,
+            status,
+            catalog,
+            tag
         } = ctx.request.query
         if (type === '0') {
+            //设置查询参数
+            let options = {}
+            //判断是否是提问、分享、讨论、建议等
+            if (catalog) {
+                options.catalog = catalog
+            }
+            //是否置顶，否
+            options.isTop = '0'
+            //文章是否完结
+            if (status !== '') {
+                options.status = status
+            } else {
+                if (tag !== '') {
+                    options.tag = {
+                        $in: [tag]
+                    }
+                }
+            }
+            let resList = await PostDb.getList(options, sort, page, limit)
             ctx.body = {
                 status: 200,
-                data: require('../mock/getList'),
+                data: resList,
                 msg: '获取列表成功'
             }
         } else {
+            //表示type为1置顶列表
+            let resList = await PostDb.getList({
+                isTop: "1"
+            }, sort, page, limit)
             ctx.body = {
                 status: 200,
-                data: require('../mock/getTop'),
+                data: resList,
                 msg: '获取列表成功'
             }
         }
@@ -135,10 +165,12 @@ class Public {
     }
 
     toWeek = async ctx => {
+        let res = await PostDb.getTopWeek()
         ctx.body = {
             msg: '获取成功',
             status: 200,
-            data: require('../mock/toweek')
+            // data: require('../mock/toweek'),
+            data: res
         }
     }
 }

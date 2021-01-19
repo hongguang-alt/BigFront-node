@@ -39,21 +39,52 @@ const Schema = new mongoose.Schema({
     tags: {
         type: Array,
         default: []
-    }
+    },
+    created: {
+        type: Date
+    },
 })
 
 //设置虚拟属性
-Schema.virtual('user', {
+/*
+  Schema.virtual('user', {
     ref: 'user',
     localField: 'uid',
-    foreignField: '_id'
-})
+    foreignField: '_id'})
+*/
+
 
 Schema.pre('save', function (next) {
     this.created = moment().format('YYYY-MM-DD HH:mm:ss')
     next()
 })
 
+//查询列表
+Schema.static('getList', function (options, sort, page, limit) {
+    return this.find(options)
+        //按照某个字段的倒序排列
+        .sort({
+            [sort]: -1
+        })
+        // .skip(page * limit)
+        // .limit(limit)
+        //解析uid，依赖于user这个表
+        .populate({
+            path: 'uid',
+            select: 'nickname isVip pic'
+        })
+})
+//查询每周热议
+Schema.static('getTopWeek', function () {
+    return this.find({
+            created: {
+                $gte: moment().subtract(7, 'days')
+            }
+        }, 'answer title').sort({
+            answer: -1
+        })
+        .limit(15)
+})
 //添加静态方法
 Schema.static = {
     /**
@@ -85,10 +116,7 @@ Schema.static = {
                 created: {
                     $gte: moment().subtract(7, 'days')
                 }
-            }, {
-                answer: 1,
-                title: 1
-            }).sort({
+            }, 'answer title').sort({
                 answer: -1
             })
             .limit(15)
